@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// The config for the entire simulation
 	SimulationConfigSettings *config.SimulationConfig
 )
 
