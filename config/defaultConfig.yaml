@@ -1,0 +1,12 @@
+NumParticles: 1000
+ParticleMass: 1.0
+FluidTargetDensity: 1.0
+GravityStrength: 1.0
+SmoothingKernelRadius: 1.0
+PressureKernelExponent: 2
+NearPressureKernelExponent: 4
+SimulationWidth: 512
+SimulationHeight: 512
+SimulationPadding: 10
+FramesPerSecond: 60
+SpatialHashingBins: -1 
