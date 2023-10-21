@@ -34,3 +34,9 @@ type SimulationConfig struct {
 	// (1 + ScreenWidth//SmoothingKernelRadius) * (1 + ScreenHeight//SmoothingKernelRadius)
 	SpatialHashingBins int `default:"-1"`
 }
+
+func CreateDefaultConfig() *SimulationConfig {
+	defaultConfig := &SimulationConfig{}
+	defaults.Set(defaultConfig)
+	return defaultConfig
+}
