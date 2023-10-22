@@ -16,7 +16,6 @@ NearPressureKernelExponent: 4
 
 SimulationWidth: 1024
 SimulationHeight: 512
-SimulationPadding: 10
 FramesPerSecond: 60
 
 SpatialHashingBins: -1 
