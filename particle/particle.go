@@ -21,15 +21,23 @@ type Particle struct {
 type ParticleCollection struct {
 	rng              *rand.Rand
 	simulationConfig *config.SimulationConfig
+	spatialHashing   *spatialHashingStructure
 	Particles        []*Particle
 }
 
-func CreateInitialParticles(simulationConfig *config.SimulationConfig) *ParticleCollection {
+func CreateParticleCollection(simulationConfig *config.SimulationConfig) *ParticleCollection {
 	particleCollection := &ParticleCollection{}
 	particleCollection.simulationConfig = simulationConfig
 	particleCollection.Particles = make([]*Particle, simulationConfig.NumParticles)
 
 	particleCollection.rng = rand.New(rand.NewSource(simulationConfig.RandomSeed))
+	particleCollection.spatialHashing = createSpatialHashingStructure(
+		2*simulationConfig.SmoothingKernelRadius,
+		particleCollection.simulationConfig.SpatialHashingBins,
+		simulationConfig.NumParticles,
+		simulationConfig.SimulationWidth,
+		simulationConfig.SimulationHeight,
+	)
 
 	for particleIndex := 0; particleIndex < simulationConfig.NumParticles; particleIndex += 1 {
 		particleX := float64(simulationConfig.SimulationWidth) * particleCollection.rng.Float64()
@@ -47,6 +55,9 @@ func (particleCollection *ParticleCollection) tickParticleWorker(particleIndexCh
 	for particleIndex := range particleIndexChannel {
 		targetParticle := particleCollection.Particles[particleIndex]
 		totalAcceleration := mat.NewVecDense(2, nil)
+
+		// neighboringParticleIndices := particleCollection.spatialHashing.getAllNeighboringParticleIndices(targetParticle)
+		// log.Printf("PARTICLE INDEX: %v\tNEIGHBORS: %v", particleIndex, neighboringParticleIndices)
 
 		// Remember - y axis starts with 0 at the top and increases *downwards*
 		totalAcceleration.SetVec(yDIR, particleCollection.simulationConfig.GravityStrength)
@@ -76,6 +87,10 @@ func (particleCollection *ParticleCollection) tickParticleWorker(particleIndexCh
 
 func (particleCollection *ParticleCollection) TickParticles() {
 	var workerThreadWaitGroup sync.WaitGroup
+
+	particleCollection.spatialHashing.updateSpatialHashing(particleCollection.Particles)
+	// log.Printf("PARTIAL SUMS:\t%v", particleCollection.spatialHashing.partialSums)
+	// log.Printf("DENSE ARRAY:\t%v", particleCollection.spatialHashing.denseParticleArray)
 
 	particleIndexChannel := make(chan int, 10)
 	for workerThreadIndex := 0; workerThreadIndex < particleCollection.simulationConfig.SimulationNumWorkerThreads; workerThreadIndex++ {
