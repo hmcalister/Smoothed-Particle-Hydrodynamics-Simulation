@@ -18,13 +18,13 @@ type SimulationConfig struct {
 
 	// GUI Config ---------------------------------------------------------------------------------
 
-	SimulationWidth  int `default:"512" yaml:"SimulationWidth"`
-	SimulationHeight int `default:"512" yaml:"SimulationHeight"`
+	SimulationWidth  int32 `default:"512" yaml:"SimulationWidth"`
+	SimulationHeight int32 `default:"512" yaml:"SimulationHeight"`
 	// The padding to add around the simulation for nice visualizations .
 	// Note this is added to the simulation width and height such that
 	// the actual window size is width+padding etc.
-	SimulationPadding int `default:"10" yaml:"SimulationPadding"`
-	FramesPerSecond   int `default:"60" yaml:"FramesPerSecond"`
+	SimulationPadding int32 `default:"10" yaml:"SimulationPadding"`
+	FramesPerSecond   int   `default:"60" yaml:"FramesPerSecond"`
 
 	// Spatial Hashing Config ---------------------------------------------------------------------
 
