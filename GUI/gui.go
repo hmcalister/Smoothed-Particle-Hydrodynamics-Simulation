@@ -25,7 +25,7 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 	}
 
 	guiConfig.window, err = sdl.CreateWindow("Smoothed Particle Hydrodynamics", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
-		simulationConfig.SimulationWidth+2*simulationConfig.SimulationPadding, simulationConfig.SimulationHeight+2*simulationConfig.SimulationPadding,
+		simulationConfig.SimulationWidth, simulationConfig.SimulationHeight,
 		sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle) {
 	pixel := sdl.MapRGB(guiConfig.surface.Format, color.R, color.G, color.B)
 	for _, particle := range particles {
 		rect := sdl.Rect{
-			X: int32(particle.Position.AtVec(0)) + guiConfig.simulationConfig.SimulationPadding,
-			Y: int32(particle.Position.AtVec(1)) + guiConfig.simulationConfig.SimulationPadding,
+			X: int32(particle.Position.AtVec(0)),
+			Y: int32(particle.Position.AtVec(1)),
 			W: guiConfig.simulationConfig.ParticleSize,
 			H: guiConfig.simulationConfig.ParticleSize,
 		}
