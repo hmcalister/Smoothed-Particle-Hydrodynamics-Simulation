@@ -2,6 +2,7 @@ package gui
 
 import (
 	"hmcalister/SmoothedParticleHydrodynamicsSimulation/config"
+	"hmcalister/SmoothedParticleHydrodynamicsSimulation/particle"
 	"log"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -10,6 +11,7 @@ import (
 type GUIConfig struct {
 	simulationConfig *config.SimulationConfig
 	window           *sdl.Window
+	surface          *sdl.Surface
 }
 
 func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
@@ -23,8 +25,13 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 	}
 
 	guiConfig.window, err = sdl.CreateWindow("Smoothed Particle Hydrodynamics", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
-		simulationConfig.SimulationWidth+simulationConfig.SimulationPadding, simulationConfig.SimulationHeight+simulationConfig.SimulationPadding,
+		simulationConfig.SimulationWidth+2*simulationConfig.SimulationPadding, simulationConfig.SimulationHeight+2*simulationConfig.SimulationPadding,
 		sdl.WINDOW_SHOWN)
+	if err != nil {
+		return nil, err
+	}
+
+	guiConfig.surface, err = guiConfig.window.GetSurface()
 	if err != nil {
 		return nil, err
 	}
