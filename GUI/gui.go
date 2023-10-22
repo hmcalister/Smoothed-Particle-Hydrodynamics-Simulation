@@ -39,6 +39,27 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 	return guiConfig, nil
 }
 
+func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle) {
+	guiConfig.surface.FillRect(nil, 0)
+
+	color := sdl.Color{
+		R: 255,
+		G: 255,
+		B: 255,
+	}
+	pixel := sdl.MapRGB(guiConfig.surface.Format, color.R, color.G, color.B)
+	for _, particle := range particles {
+		rect := sdl.Rect{
+			X: int32(particle.Position.AtVec(0)) + guiConfig.simulationConfig.SimulationPadding,
+			Y: int32(particle.Position.AtVec(1)) + guiConfig.simulationConfig.SimulationPadding,
+			W: guiConfig.simulationConfig.ParticleSize,
+			H: guiConfig.simulationConfig.ParticleSize,
+		}
+		guiConfig.surface.FillRect(&rect, pixel)
+	}
+	guiConfig.window.UpdateSurface()
+}
+
 func (guiConfig *GUIConfig) DestroyGUI() {
 	err := guiConfig.window.Destroy()
 	if err != nil {
