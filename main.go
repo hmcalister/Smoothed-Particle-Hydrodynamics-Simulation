@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"sync"
 	"time"
 
 	gui "hmcalister/SmoothedParticleHydrodynamicsSimulation/GUI"
@@ -51,7 +50,6 @@ func init() {
 
 func main() {
 	lastFrameTime := time.Unix(0, 0)
-	var frameWaitGroup sync.WaitGroup
 
 GameLoop:
 	for {
@@ -69,20 +67,11 @@ GameLoop:
 
 		// Handle frame delay for frames per second
 		timeToNextFrame := (1 / simulationConfig.FramesPerSecond) - time.Since(lastFrameTime).Seconds()
-		// If we must wait for the next frame, then we wait async such that we can do the calculation
-		// for the next frame while we wait!
 		if timeToNextFrame > 0 {
-			frameWaitGroup.Add(1)
-			go func() {
-				sdl.Delay(uint32(1000 * timeToNextFrame))
-				frameWaitGroup.Done()
-			}()
+			sdl.Delay(uint32(1000 * timeToNextFrame))
+		} else {
+			log.Printf("FRAME DELAYED")
 		}
 		lastFrameTime = time.Now()
-
-		// Calculate the next step of the particles
-
-		// Finish waiting for the next frame
-		frameWaitGroup.Wait()
 	}
 }
