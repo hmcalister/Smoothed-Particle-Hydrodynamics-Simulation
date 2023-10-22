@@ -2,14 +2,20 @@ package particle
 
 import (
 	"hmcalister/SmoothedParticleHydrodynamicsSimulation/config"
+	"sync"
 
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 )
 
+const (
+	xDIR int = 0
+	yDIR int = 1
+)
+
 type Particle struct {
-	Position mat.VecDense
-	Velocity mat.VecDense
+	Position *mat.VecDense
+	Velocity *mat.VecDense
 }
 
 type ParticleCollection struct {
@@ -29,10 +35,60 @@ func CreateInitialParticles(simulationConfig *config.SimulationConfig) *Particle
 		particleX := float64(simulationConfig.SimulationWidth) * particleCollection.rng.Float64()
 		particleY := float64(simulationConfig.SimulationHeight) * particleCollection.rng.Float64()
 		particleCollection.Particles[particleIndex] = &Particle{
-			Position: *mat.NewVecDense(2, []float64{particleX, particleY}),
-			Velocity: *mat.NewVecDense(2, nil),
+			Position: mat.NewVecDense(2, []float64{particleX, particleY}),
+			Velocity: mat.NewVecDense(2, nil),
 		}
 	}
 
 	return particleCollection
+}
+
+func (particleCollection *ParticleCollection) tickParticleWorker(particleIndexChannel <-chan int) {
+	for particleIndex := range particleIndexChannel {
+		targetParticle := particleCollection.Particles[particleIndex]
+		totalAcceleration := mat.NewVecDense(2, nil)
+
+		// Remember - y axis starts with 0 at the top and increases *downwards*
+		totalAcceleration.SetVec(yDIR, particleCollection.simulationConfig.GravityStrength)
+
+		// TODO: Find All neighboring particles and apply viscosity etc
+
+		targetParticle.Velocity.AddScaledVec(targetParticle.Velocity, particleCollection.simulationConfig.SimulationStepSize, totalAcceleration)
+		targetParticle.Position.AddScaledVec(targetParticle.Position, particleCollection.simulationConfig.SimulationStepSize, targetParticle.Velocity)
+
+		// Handle edge of simulation
+		if targetParticle.Position.AtVec(xDIR) < 0.0 {
+			targetParticle.Position.SetVec(xDIR, -targetParticle.Position.AtVec(xDIR))
+			targetParticle.Velocity.SetVec(xDIR, -targetParticle.Velocity.AtVec(xDIR)*particleCollection.simulationConfig.CollisionDampingCoefficient)
+		} else if targetParticle.Position.AtVec(xDIR) > float64(particleCollection.simulationConfig.SimulationWidth) {
+			targetParticle.Position.SetVec(xDIR, 2*float64(particleCollection.simulationConfig.SimulationWidth)-targetParticle.Position.AtVec(xDIR))
+			targetParticle.Velocity.SetVec(xDIR, -targetParticle.Velocity.AtVec(xDIR)*particleCollection.simulationConfig.CollisionDampingCoefficient)
+		}
+		if targetParticle.Position.AtVec(yDIR) < 0.0 {
+			targetParticle.Position.SetVec(yDIR, -targetParticle.Position.AtVec(yDIR))
+			targetParticle.Velocity.SetVec(yDIR, -targetParticle.Velocity.AtVec(yDIR)*particleCollection.simulationConfig.CollisionDampingCoefficient)
+		} else if targetParticle.Position.AtVec(yDIR) > float64(particleCollection.simulationConfig.SimulationHeight) {
+			targetParticle.Position.SetVec(yDIR, 2*float64(particleCollection.simulationConfig.SimulationHeight)-targetParticle.Position.AtVec(yDIR))
+			targetParticle.Velocity.SetVec(yDIR, -targetParticle.Velocity.AtVec(yDIR)*particleCollection.simulationConfig.CollisionDampingCoefficient)
+		}
+	}
+}
+
+func (particleCollection *ParticleCollection) TickParticles() {
+	var workerThreadWaitGroup sync.WaitGroup
+
+	particleIndexChannel := make(chan int, 10)
+	for workerThreadIndex := 0; workerThreadIndex < particleCollection.simulationConfig.SimulationNumWorkerThreads; workerThreadIndex++ {
+		workerThreadWaitGroup.Add(1)
+		go func() {
+			particleCollection.tickParticleWorker(particleIndexChannel)
+			workerThreadWaitGroup.Done()
+		}()
+	}
+
+	for particleIndex := 0; particleIndex < len(particleCollection.Particles); particleIndex += 1 {
+		particleIndexChannel <- particleIndex
+	}
+	close(particleIndexChannel)
+	workerThreadWaitGroup.Wait()
 }
