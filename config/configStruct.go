@@ -8,11 +8,18 @@ import (
 type SimulationConfig struct {
 	// Simulation Config --------------------------------------------------------------------------
 
-	NumParticles       int     `default:"1000" yaml:"NumParticles"`
-	ParticleMass       float64 `default:"1.0" yaml:"ParticleMass"`
-	ParticleSize       int32   `default:"5" yaml:"ParticleSize"`
-	FluidTargetDensity float64 `default:"1.0" yaml:"FluidTargetDensity"`
-	GravityStrength    float64 `default:"1.0" yaml:"GravityStrength"`
+	NumParticles                int     `default:"1000" yaml:"NumParticles"`
+	ParticleMass                float64 `default:"1.0" yaml:"ParticleMass"`
+	ParticleSize                int32   `default:"5" yaml:"ParticleSize"`
+	FluidTargetDensity          float64 `default:"1.0" yaml:"FluidTargetDensity"`
+	ViscosityCoefficient        float64 `default:"0.0" yaml:"ViscosityCoefficient"`
+	CollisionDampingCoefficient float64 `default:"0.0" yaml:"CollisionDampingCoefficient"`
+	GravityStrength             float64 `default:"1.0" yaml:"GravityStrength"`
+
+	// Simulation Meta Config ---------------------------------------------------------------------
+
+	SimulationStepSize         float64 `default:"1.0" yaml:"SimulationStepSize"`
+	SimulationNumWorkerThreads int     `default:"8" yaml:"SimulationNumWorkerThreads"`
 	// If random seed is set to 0, then a random seed is generated instead
 	RandomSeed uint64 `default:"0" yaml:"RandomSeed"`
 
@@ -24,13 +31,9 @@ type SimulationConfig struct {
 
 	// GUI Config ---------------------------------------------------------------------------------
 
-	SimulationWidth  int32 `default:"1024" yaml:"SimulationWidth"`
-	SimulationHeight int32 `default:"512" yaml:"SimulationHeight"`
-	// The padding to add around the simulation for nice visualizations .
-	// Note this is added to the simulation width and height such that
-	// the actual window size is width+padding etc.
-	SimulationPadding int32 `default:"10" yaml:"SimulationPadding"`
-	FramesPerSecond   int   `default:"60" yaml:"FramesPerSecond"`
+	SimulationWidth  int32   `default:"1024" yaml:"SimulationWidth"`
+	SimulationHeight int32   `default:"512" yaml:"SimulationHeight"`
+	FramesPerSecond  float64 `default:"60" yaml:"FramesPerSecond"`
 
 	// Spatial Hashing Config ---------------------------------------------------------------------
 
