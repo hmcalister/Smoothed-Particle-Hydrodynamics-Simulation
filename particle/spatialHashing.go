@@ -1,8 +1,10 @@
 package particle
 
-import "math"
+import (
+	"math"
+)
 
-type spatialHashing struct {
+type spatialHashingStructure struct {
 	// Cell Sizes - equal to the smoothing kernel radius
 	cellSize float64
 
@@ -46,12 +48,14 @@ type spatialHashing struct {
 	particleHashes []int
 }
 
-func createSpatialHashing(cellSize float64, spatialHashingBins int, numParticles int, simulationWidth float64, simulationHeight float64) *spatialHashing {
-	return &spatialHashing{
+func createSpatialHashingStructure(cellSize float64, spatialHashingBins int, numParticles int, simulationWidth int32, simulationHeight int32) *spatialHashingStructure {
+	numCellsX := int(math.Ceil(float64(simulationWidth) / cellSize))
+	numCellsY := int(math.Ceil(float64(simulationHeight) / cellSize))
+	return &spatialHashingStructure{
 		cellSize:           cellSize,
-		numCellsX:          int(math.Ceil(simulationWidth / cellSize)),
-		numCellsY:          int(math.Ceil(simulationHeight / cellSize)),
-		numCells:           int(math.Ceil(simulationWidth/cellSize) * math.Ceil(simulationHeight/cellSize)),
+		numCellsX:          numCellsX,
+		numCellsY:          numCellsY,
+		numCells:           numCellsX * numCellsY,
 		bins:               spatialHashingBins,
 		partialSums:        make([]int, spatialHashingBins+1),
 		denseParticleArray: make([]int, numParticles),
@@ -59,7 +63,7 @@ func createSpatialHashing(cellSize float64, spatialHashingBins int, numParticles
 	}
 }
 
-func (sh *spatialHashing) hashCoordinate(x int, y int) int {
+func (sh *spatialHashingStructure) hashCoordinate(x int, y int) int {
 	hashCoefficients := []int{92837111, 689287499}
 	particleHash := hashCoefficients[xDIR]*x + hashCoefficients[yDIR]*y
 	if particleHash < 0 {
@@ -68,11 +72,11 @@ func (sh *spatialHashing) hashCoordinate(x int, y int) int {
 	return particleHash % sh.bins
 }
 
-func (sh *spatialHashing) convertParticleToCoordinate(particle *Particle) (int, int) {
+func (sh *spatialHashingStructure) convertParticleToCoordinate(particle *Particle) (int, int) {
 	return int(particle.Position.AtVec(xDIR) / sh.cellSize), int(particle.Position.AtVec(yDIR) / sh.cellSize)
 }
 
-func (sh *spatialHashing) updateSpatialHashing(particles []*Particle) {
+func (sh *spatialHashingStructure) updateSpatialHashing(particles []*Particle) {
 	clear(sh.partialSums)
 
 	// Find count of each bin
@@ -85,34 +89,35 @@ func (sh *spatialHashing) updateSpatialHashing(particles []*Particle) {
 	cumulativeSum := 0
 	for binIndex := 0; binIndex < len(sh.partialSums); binIndex += 1 {
 		sh.partialSums[binIndex] += cumulativeSum
-		cumulativeSum += sh.partialSums[binIndex]
+		cumulativeSum = sh.partialSums[binIndex]
 	}
 
 	// Fill in dense particle array using indices of cumulative sum
 	for particleIndex := 0; particleIndex < len(particles); particleIndex += 1 {
-		denseIndex := sh.partialSums[sh.particleHashes[particleIndex]]
+		particleHash := sh.particleHashes[particleIndex]
+		denseIndex := sh.partialSums[particleHash]
 		sh.partialSums[sh.particleHashes[particleIndex]] -= 1
-		sh.denseParticleArray[denseIndex] = particleIndex
+		sh.denseParticleArray[denseIndex-1] = particleIndex
 	}
 }
 
-func (sh *spatialHashing) getParticleIndicesInBin(binIndex int) []int {
+func (sh *spatialHashingStructure) getParticleIndicesInBin(binIndex int) []int {
 	// First, find the start index of this bin in the dense array
 	denseStartIndex := sh.partialSums[binIndex]
 	// Also find the final bin Index
 	denseFinalIndex := sh.partialSums[binIndex+1]
 
 	// Create an array to return the particle indices of this bin, fill it, and return
-	binParticleIndices := make([]int, denseFinalIndex)
+	binParticleIndices := make([]int, denseFinalIndex-denseStartIndex)
 	i := 0
 	for itemIndex := denseStartIndex; itemIndex < denseFinalIndex; itemIndex, i = itemIndex+1, i+1 {
-		binParticleIndices[i] = denseFinalIndex
+		binParticleIndices[i] = sh.denseParticleArray[itemIndex]
 	}
 
 	return binParticleIndices
 }
 
-func (sh *spatialHashing) getAllNeighboringParticleIndices(particle *Particle) []int {
+func (sh *spatialHashingStructure) getAllNeighboringParticleIndices(particle *Particle) []int {
 	neighboringParticleIndices := make([]int, 0)
 
 	// Find the cell coordinates of this particle
