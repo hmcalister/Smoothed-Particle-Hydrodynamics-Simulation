@@ -2,30 +2,40 @@ package main
 
 import (
 	"flag"
-	"hmcalister/SmoothedParticleHydrodynamicsSimulation/config"
 	"log"
+
+	gui "hmcalister/SmoothedParticleHydrodynamicsSimulation/GUI"
+	"hmcalister/SmoothedParticleHydrodynamicsSimulation/config"
 )
 
 var (
 	// The config for the entire simulation
-	SimulationConfigSettings *config.SimulationConfig
+	simulationConfig *config.SimulationConfig
+
+	// The manager for the GUI
+	guiConfig *gui.GUIConfig
 )
 
 func init() {
+	var err error
 	configFilePath := flag.String("ConfigFile", "", "Path to the config file. No path results in default config.")
 	flag.Parse()
 
 	if *configFilePath == "" {
-		SimulationConfigSettings = config.CreateDefaultConfig()
+		simulationConfig = config.CreateDefaultConfig()
 	} else {
-		var err error
-		SimulationConfigSettings, err = config.ReadConfigYaml(*configFilePath)
+		simulationConfig, err = config.ReadConfigYaml(*configFilePath)
 		if err != nil {
 			log.Panicf("error during reading config file: %v", err)
 		}
 	}
+
+	guiConfig, err = gui.InitGUI(simulationConfig)
+	if err != nil {
+		log.Panicf("error during gui initialization: %v", err)
+	}
 }
 
 func main() {
-	log.Printf("%+v", SimulationConfigSettings)
+	// guiConfig.DestroyGUI()
 }
