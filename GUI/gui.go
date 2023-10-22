@@ -25,7 +25,7 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 	}
 
 	guiConfig.window, err = sdl.CreateWindow("Smoothed Particle Hydrodynamics", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED,
-		simulationConfig.SimulationWidth, simulationConfig.SimulationHeight,
+		simulationConfig.SimulationWidth+simulationConfig.ParticleSize, simulationConfig.SimulationHeight+simulationConfig.ParticleSize,
 		sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, err
