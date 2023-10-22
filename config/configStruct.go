@@ -1,7 +1,6 @@
 package config
 
 import (
-	"math"
 	"math/rand"
 )
 
@@ -39,8 +38,7 @@ type SimulationConfig struct {
 
 	// Number of bins to hash cells into.
 	// If set to -1 this is set to a number of bins equal to
-	// the number of cells that cover the screen
-	// (1 + ScreenWidth//SmoothingKernelRadius) * (1 + ScreenHeight//SmoothingKernelRadius)
+	// the number of particles
 	SpatialHashingBins int `default:"-1" yaml:"SpatialHashingBins"`
 }
 
@@ -49,8 +47,7 @@ type SimulationConfig struct {
 // e.g. if SpatialHashingBins=-1, replace this with the correct number of bins
 func (simulationConfig *SimulationConfig) finalizeConfig() {
 	if simulationConfig.SpatialHashingBins == -1 {
-		simulationCoveringBins := (1 + float64(simulationConfig.SimulationWidth)/simulationConfig.SmoothingKernelRadius) * (1 + float64(simulationConfig.SimulationHeight)/simulationConfig.SmoothingKernelRadius)
-		simulationConfig.SpatialHashingBins = int(math.Ceil(simulationCoveringBins))
+		simulationConfig.SpatialHashingBins = simulationConfig.NumParticles
 	}
 
 	if simulationConfig.RandomSeed == 0 {

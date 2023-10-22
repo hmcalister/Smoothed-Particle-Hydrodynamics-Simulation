@@ -40,7 +40,7 @@ func init() {
 	}
 
 	// Create some particles
-	particleCollection = particle.CreateInitialParticles(simulationConfig)
+	particleCollection = particle.CreateParticleCollection(simulationConfig)
 
 	// Start the GUI
 	guiConfig, err = gui.InitGUI(simulationConfig)
