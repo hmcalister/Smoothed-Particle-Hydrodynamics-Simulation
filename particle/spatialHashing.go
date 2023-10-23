@@ -11,10 +11,6 @@ type spatialHashingStructure struct {
 	numCellsX int
 	numCellsY int
 
-	// The number of cells used in the spatial hashing.
-	// Equal to the simulationWidth/cellSize * simulationHeight/cellSize
-	numCells int
-
 	// Number of bins to hash cells into
 	bins int
 
@@ -55,7 +51,6 @@ func createSpatialHashingStructure(cellSize float64, spatialHashingBins int, num
 		cellSize:           cellSize,
 		numCellsX:          numCellsX,
 		numCellsY:          numCellsY,
-		numCells:           numCellsX * numCellsY,
 		bins:               spatialHashingBins,
 		partialSums:        make([]int, spatialHashingBins+1),
 		denseParticleArray: make([]int, numParticles),
