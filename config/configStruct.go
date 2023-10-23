@@ -25,8 +25,8 @@ type SimulationConfig struct {
 	// Smoothing Kernel Config --------------------------------------------------------------------
 
 	SmoothingKernelRadius      float64 `default:"1.0" yaml:"SmoothingKernelRadius"`
-	PressureKernelExponent     int     `default:"2" yaml:"PressureKernelExponent"`
-	NearPressureKernelExponent int     `default:"4" yaml:"NearPressureKernelExponent"`
+	PressureKernelExponent     float64 `default:"2" yaml:"PressureKernelExponent"`
+	NearPressureKernelExponent float64 `default:"4" yaml:"NearPressureKernelExponent"`
 
 	// GUI Config ---------------------------------------------------------------------------------
 
