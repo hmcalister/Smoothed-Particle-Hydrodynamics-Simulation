@@ -49,7 +49,7 @@ func init() {
 }
 
 func main() {
-	lastFrameTime := time.Unix(0, 0)
+	lastFrameTime := time.Now()
 
 GameLoop:
 	for {
@@ -69,9 +69,10 @@ GameLoop:
 		timeToNextFrame := (1 / simulationConfig.FramesPerSecond) - time.Since(lastFrameTime).Seconds()
 		if timeToNextFrame > 0 {
 			sdl.Delay(uint32(1000 * timeToNextFrame))
-		} else {
-			log.Printf("FRAME DELAYED")
 		}
+		guiConfig.DisplayFPSText(1 / time.Since(lastFrameTime).Seconds())
+
+		guiConfig.ShowFrame()
 		lastFrameTime = time.Now()
 	}
 }

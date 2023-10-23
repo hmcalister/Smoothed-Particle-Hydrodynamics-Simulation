@@ -1,17 +1,21 @@
 package gui
 
 import (
+	"fmt"
 	"hmcalister/SmoothedParticleHydrodynamicsSimulation/config"
 	"hmcalister/SmoothedParticleHydrodynamicsSimulation/particle"
 	"log"
 
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 )
 
 type GUIConfig struct {
 	simulationConfig *config.SimulationConfig
 	window           *sdl.Window
 	surface          *sdl.Surface
+	renderer         *sdl.Renderer
+	font             *ttf.Font
 }
 
 func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
@@ -36,18 +40,26 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 		return nil, err
 	}
 
+	guiConfig.renderer, err = guiConfig.window.GetRenderer()
+	if err != nil {
+		return nil, err
+	}
+
+	err = ttf.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	guiConfig.font, err = ttf.OpenFont("assets/Arial.ttf", 18)
+	if err != nil {
+		return nil, err
+	}
+
 	return guiConfig, nil
 }
 
 func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle) {
-	guiConfig.surface.FillRect(nil, 0)
-
-	color := sdl.Color{
-		R: 255,
-		G: 255,
-		B: 255,
-	}
-	pixel := sdl.MapRGB(guiConfig.surface.Format, color.R, color.G, color.B)
+	guiConfig.renderer.SetDrawColor(255, 255, 255, 0)
 	for _, particle := range particles {
 		rect := sdl.Rect{
 			X: int32(particle.Position.AtVec(0)),
@@ -55,16 +67,49 @@ func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle) {
 			W: guiConfig.simulationConfig.ParticleSize,
 			H: guiConfig.simulationConfig.ParticleSize,
 		}
-		guiConfig.surface.FillRect(&rect, pixel)
+		guiConfig.renderer.FillRect(&rect)
 	}
-	guiConfig.window.UpdateSurface()
+}
+
+func (guiConfig *GUIConfig) DisplayFPSText(currentFPS float64) {
+	textColor := sdl.Color{
+		R: 255,
+		G: 255,
+		B: 255,
+	}
+
+	fpsTextSurface, _ := guiConfig.font.RenderUTF8Solid(fmt.Sprintf("FPS: %.2f", currentFPS), textColor)
+	defer fpsTextSurface.Free()
+
+	textRect := &sdl.Rect{X: 10, Y: 10, W: fpsTextSurface.W, H: fpsTextSurface.H}
+
+	fpsTextTexture, _ := guiConfig.renderer.CreateTextureFromSurface(fpsTextSurface)
+	defer fpsTextTexture.Destroy()
+	guiConfig.renderer.Copy(fpsTextTexture, nil, textRect)
+}
+
+func (guiConfig *GUIConfig) ShowFrame() {
+	guiConfig.renderer.SetDrawColor(0, 0, 0, 255)
+	guiConfig.renderer.Present()
+	guiConfig.renderer.Clear()
+
 }
 
 func (guiConfig *GUIConfig) DestroyGUI() {
-	err := guiConfig.window.Destroy()
+	var err error
+
+	guiConfig.surface.Free()
+	err = guiConfig.renderer.Destroy()
+	if err != nil {
+		log.Panicf("error during gui renderer destruction: %v", err)
+	}
+
+	err = guiConfig.window.Destroy()
 	if err != nil {
 		log.Panicf("error during gui window destruction: %v", err)
 	}
+
+	guiConfig.font.Close()
 
 	sdl.Quit()
 }
