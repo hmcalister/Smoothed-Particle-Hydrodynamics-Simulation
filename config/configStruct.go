@@ -8,9 +8,12 @@ import (
 type SimulationConfig struct {
 	// Simulation Config --------------------------------------------------------------------------
 
-	NumParticles                int     `default:"1000" yaml:"NumParticles"`
-	ParticleMass                float64 `default:"1.0" yaml:"ParticleMass"`
-	ParticleSize                int32   `default:"5" yaml:"ParticleSize"`
+	// Particle properties
+
+	NumParticles int     `default:"1000" yaml:"NumParticles"`
+	ParticleMass float64 `default:"1.0" yaml:"ParticleMass"`
+	ParticleSize int32   `default:"5" yaml:"ParticleSize"`
+
 	FluidTargetDensity          float64 `default:"1.0" yaml:"FluidTargetDensity"`
 	PressureCoefficient         float64 `default:"1.0" yaml:"PressureCoefficient"`
 	ViscosityCoefficient        float64 `default:"0.0" yaml:"ViscosityCoefficient"`
@@ -20,10 +23,10 @@ type SimulationConfig struct {
 	// Simulation Meta Config ---------------------------------------------------------------------
 
 	SimulationStepSize         float64 `default:"1.0" yaml:"SimulationStepSize"`
+	StepsPerFrame              int     `default:"1" yaml:"StepsPerFrame"`
 	SimulationNumWorkerThreads int     `default:"8" yaml:"SimulationNumWorkerThreads"`
 	// If random seed is set to 0, then a random seed is generated instead
-	RandomSeed    uint64 `default:"0" yaml:"RandomSeed"`
-	StepsPerFrame int    `default:"1" yaml:"StepsPerFrame"`
+	RandomSeed uint64 `default:"0" yaml:"RandomSeed"`
 
 	// GUI Config ---------------------------------------------------------------------------------
 
