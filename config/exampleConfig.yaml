@@ -1,0 +1,20 @@
+NumParticles: 1000
+ParticleMass: 1.0
+ParticleSize: 3
+
+FluidTargetDensity: 0.0025
+PressureCoefficient: 5
+ViscosityCoefficient: 0.00
+CollisionDampingCoefficient: 0.8
+GravityStrength: 0.00001
+
+SimulationStepSize: 5
+StepsPerFrame: 1
+SimulationNumWorkerThreads: 12
+RandomSeed: 0
+
+SimulationWidth: 512
+SimulationHeight: 512
+FramesPerSecond: 60
+
+SpatialHashingBins: -1
