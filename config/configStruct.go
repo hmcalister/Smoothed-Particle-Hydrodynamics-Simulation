@@ -25,6 +25,7 @@ type SimulationConfig struct {
 	SimulationStepSize         float64 `default:"1.0" yaml:"SimulationStepSize"`
 	StepsPerFrame              int     `default:"1" yaml:"StepsPerFrame"`
 	SimulationNumWorkerThreads int     `default:"8" yaml:"SimulationNumWorkerThreads"`
+	SmoothingKernelRadius      float64 `default:"20" yaml:"SmoothingKernelRadius"`
 	// If random seed is set to 0, then a random seed is generated instead
 	RandomSeed uint64 `default:"0" yaml:"RandomSeed"`
 
