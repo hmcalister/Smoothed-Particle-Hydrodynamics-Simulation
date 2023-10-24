@@ -10,6 +10,11 @@ const (
 )
 
 type Particle struct {
-	Position *mat.VecDense
-	Velocity *mat.VecDense
+	PredictedPosition *mat.VecDense
+	Position          *mat.VecDense
+	Velocity          *mat.VecDense
+}
+
+func (p *Particle) updatePredictedPosition(stepSize float64) {
+	p.PredictedPosition.AddScaledVec(p.Position, stepSize, p.Velocity)
 }

@@ -23,8 +23,8 @@ func ReadConfigYaml(yamlFilePath string) (*SimulationConfig, error) {
 		return nil, err
 	}
 
-	// simulationConfig := &SimulationConfig{}
-	simulationConfig := CreateDefaultConfig()
+	simulationConfig := &SimulationConfig{}
+	defaults.Set(simulationConfig)
 
 	// Unmarshal the file contents into a SimulationConfig struct
 	err = yaml.Unmarshal(fileContents, simulationConfig)

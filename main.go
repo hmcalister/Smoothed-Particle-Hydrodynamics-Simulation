@@ -62,8 +62,10 @@ GameLoop:
 		}
 
 		// Update particle and draw for this frame
-		particleCollection.TickParticles()
-		guiConfig.DrawParticles(particleCollection.Particles)
+		for stepIndex := 0; stepIndex < simulationConfig.StepsPerFrame; stepIndex += 1 {
+			particleCollection.TickParticles()
+		}
+		guiConfig.DrawParticles(particleCollection.Particles, particleCollection.GetParticleColors())
 
 		// Handle frame delay for frames per second
 		timeToNextFrame := (1 / simulationConfig.FramesPerSecond) - time.Since(lastFrameTime).Seconds()

@@ -68,7 +68,8 @@ func (sh *spatialHashingStructure) hashCoordinate(x int, y int) int {
 }
 
 func (sh *spatialHashingStructure) convertParticleToCoordinate(particle *Particle) (int, int) {
-	return int(particle.Position.AtVec(xDIR) / sh.cellSize), int(particle.Position.AtVec(yDIR) / sh.cellSize)
+	hashingVec := particle.PredictedPosition
+	return int(hashingVec.AtVec(xDIR) / sh.cellSize), int(hashingVec.AtVec(yDIR) / sh.cellSize)
 }
 
 func (sh *spatialHashingStructure) updateSpatialHashing(particles []*Particle) {
