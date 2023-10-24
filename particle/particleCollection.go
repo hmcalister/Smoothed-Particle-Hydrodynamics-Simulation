@@ -12,6 +12,7 @@ type ParticleCollection struct {
 	rng              *rand.Rand
 	simulationConfig *config.SimulationConfig
 	spatialHashing   *spatialHashingStructure
+	smoothingKernel  *smoothingKernelStructure
 	Particles        []*Particle
 	densities        []float64
 }
@@ -23,12 +24,14 @@ func CreateParticleCollection(simulationConfig *config.SimulationConfig) *Partic
 
 	particleCollection.rng = rand.New(rand.NewSource(simulationConfig.RandomSeed))
 	particleCollection.spatialHashing = createSpatialHashingStructure(
-		2*smoothingKernelRadius,
+		2*simulationConfig.SmoothingKernelRadius,
 		particleCollection.simulationConfig.SpatialHashingBins,
 		simulationConfig.NumParticles,
 		simulationConfig.SimulationWidth,
 		simulationConfig.SimulationHeight,
 	)
+
+	particleCollection.smoothingKernel = newSmoothingKernel(simulationConfig.SmoothingKernelRadius)
 
 	for particleIndex := 0; particleIndex < simulationConfig.NumParticles; particleIndex += 1 {
 		particleX := float64(simulationConfig.SimulationWidth) * particleCollection.rng.Float64()
@@ -75,7 +78,7 @@ func (particleCollection *ParticleCollection) calculateDensityWorker(particleInd
 		for _, neighborIndex := range neighboringParticleIndices {
 			displacementVec.SubVec(targetParticle.PredictedPosition, particleCollection.Particles[neighborIndex].PredictedPosition)
 			displacementMagnitude := displacementVec.Norm(2)
-			influence := smoothingKernel(displacementMagnitude)
+			influence := particleCollection.smoothingKernel.kernel(displacementMagnitude)
 			density += particleCollection.simulationConfig.ParticleMass * influence
 		}
 		particleCollection.densities[particleIndex] = density
@@ -115,7 +118,7 @@ func (particleCollection *ParticleCollection) tickParticleWorker(particleIndexCh
 			displacementVec.ScaleVec(1/displacementMagnitude, displacementVec)
 
 			// Get magnitude of gradient at this displacement
-			gradientMagnitude := smoothingKernelGradientMagnitude(displacementMagnitude)
+			gradientMagnitude := particleCollection.smoothingKernel.kernelGradientMagnitude(displacementMagnitude)
 
 			// Find average pressure between the two particles and use this (approximating newtons third law)
 			sharedPressure := particleCollection.calculateSharedPressure(particleCollection.densities[particleIndex], particleCollection.densities[neighborIndex])
@@ -124,7 +127,7 @@ func (particleCollection *ParticleCollection) tickParticleWorker(particleIndexCh
 
 			// Calculate viscosity force
 			velocityDifferential.SubVec(targetParticle.Velocity, neighborParticle.Velocity)
-			influence := -smoothingKernel(displacementMagnitude)
+			influence := -particleCollection.smoothingKernel.kernel(displacementMagnitude)
 			totalForce.AddScaledVec(totalForce, influence*particleCollection.simulationConfig.ViscosityCoefficient, velocityDifferential)
 		}
 		targetParticle.Velocity.AddScaledVec(targetParticle.Velocity, particleCollection.simulationConfig.SimulationStepSize/particleCollection.densities[particleIndex], totalForce)

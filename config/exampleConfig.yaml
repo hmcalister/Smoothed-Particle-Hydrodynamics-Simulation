@@ -11,6 +11,7 @@ GravityStrength: 0.00001
 SimulationStepSize: 5
 StepsPerFrame: 1
 SimulationNumWorkerThreads: 12
+SmoothingKernelRadius: 10
 RandomSeed: 0
 
 SimulationWidth: 512
