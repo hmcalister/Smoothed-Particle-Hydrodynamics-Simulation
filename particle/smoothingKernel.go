@@ -5,20 +5,27 @@ import (
 )
 
 const (
-	smoothingKernelRadius float64 = 20.0
-	exponent              float64 = 2
+	exponent float64 = 2
 )
 
-func normalizationCoefficient() float64 {
-	return ((exponent*exponent + 3*exponent + 2) / (2 * math.Pi * math.Pow(smoothingKernelRadius, exponent+2)))
+type smoothingKernelStructure struct {
+	kernelRadius        float64
+	normalizationFactor float64
 }
 
-func smoothingKernel(displacement float64) float64 {
-	displacement = min(displacement, smoothingKernelRadius)
-	return normalizationCoefficient() * math.Pow(smoothingKernelRadius-displacement, exponent)
+func newSmoothingKernel(kernelRadius float64) *smoothingKernelStructure {
+	return &smoothingKernelStructure{
+		kernelRadius:        kernelRadius,
+		normalizationFactor: ((exponent*exponent + 3*exponent + 2) / (2 * math.Pi * math.Pow(kernelRadius, exponent+2))),
+	}
 }
 
-func smoothingKernelGradientMagnitude(displacement float64) float64 {
-	displacement = min(displacement, smoothingKernelRadius)
-	return exponent * normalizationCoefficient() * math.Pow(smoothingKernelRadius-displacement, exponent-1)
+func (kernel *smoothingKernelStructure) kernel(displacement float64) float64 {
+	displacement = min(displacement, kernel.kernelRadius)
+	return kernel.normalizationFactor * math.Pow(kernel.kernelRadius-displacement, exponent)
+}
+
+func (kernel *smoothingKernelStructure) kernelGradientMagnitude(displacement float64) float64 {
+	displacement = min(displacement, kernel.kernelRadius)
+	return exponent * kernel.normalizationFactor * math.Pow(kernel.kernelRadius-displacement, exponent-1)
 }
