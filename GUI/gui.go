@@ -58,9 +58,19 @@ func InitGUI(simulationConfig *config.SimulationConfig) (*GUIConfig, error) {
 	return guiConfig, nil
 }
 
-func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle) {
-	guiConfig.renderer.SetDrawColor(255, 255, 255, 0)
-	for _, particle := range particles {
+func (guiConfig *GUIConfig) setColorByParticleColorMap(particleColorMap float64) {
+	if particleColorMap < 0 {
+		lowerColorChannels := uint8(255 * (1 + particleColorMap))
+		guiConfig.renderer.SetDrawColor(lowerColorChannels, lowerColorChannels, 255, 0)
+	} else {
+		lowerColorChannels := uint8(255 * (1 - particleColorMap))
+		guiConfig.renderer.SetDrawColor(255, lowerColorChannels, lowerColorChannels, 0)
+	}
+}
+
+func (guiConfig *GUIConfig) DrawParticles(particles []*particle.Particle, particleColorMap []float64) {
+	for particleIndex, particle := range particles {
+		guiConfig.setColorByParticleColorMap(particleColorMap[particleIndex])
 		rect := sdl.Rect{
 			X: int32(particle.Position.AtVec(0)),
 			Y: int32(particle.Position.AtVec(1)),
