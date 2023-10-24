@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"math/rand"
 )
 
@@ -11,6 +12,7 @@ type SimulationConfig struct {
 	ParticleMass                float64 `default:"1.0" yaml:"ParticleMass"`
 	ParticleSize                int32   `default:"5" yaml:"ParticleSize"`
 	FluidTargetDensity          float64 `default:"1.0" yaml:"FluidTargetDensity"`
+	PressureCoefficient         float64 `default:"1.0" yaml:"PressureCoefficient"`
 	ViscosityCoefficient        float64 `default:"0.0" yaml:"ViscosityCoefficient"`
 	CollisionDampingCoefficient float64 `default:"0.0" yaml:"CollisionDampingCoefficient"`
 	GravityStrength             float64 `default:"1.0" yaml:"GravityStrength"`
@@ -20,13 +22,8 @@ type SimulationConfig struct {
 	SimulationStepSize         float64 `default:"1.0" yaml:"SimulationStepSize"`
 	SimulationNumWorkerThreads int     `default:"8" yaml:"SimulationNumWorkerThreads"`
 	// If random seed is set to 0, then a random seed is generated instead
-	RandomSeed uint64 `default:"0" yaml:"RandomSeed"`
-
-	// Smoothing Kernel Config --------------------------------------------------------------------
-
-	SmoothingKernelRadius      float64 `default:"1.0" yaml:"SmoothingKernelRadius"`
-	PressureKernelExponent     float64 `default:"2" yaml:"PressureKernelExponent"`
-	NearPressureKernelExponent float64 `default:"4" yaml:"NearPressureKernelExponent"`
+	RandomSeed    uint64 `default:"0" yaml:"RandomSeed"`
+	StepsPerFrame int    `default:"1" yaml:"StepsPerFrame"`
 
 	// GUI Config ---------------------------------------------------------------------------------
 
@@ -47,10 +44,12 @@ type SimulationConfig struct {
 // e.g. if SpatialHashingBins=-1, replace this with the correct number of bins
 func (simulationConfig *SimulationConfig) finalizeConfig() {
 	if simulationConfig.SpatialHashingBins == -1 {
-		simulationConfig.SpatialHashingBins = simulationConfig.NumParticles
+		simulationConfig.SpatialHashingBins = 10 * simulationConfig.NumParticles
 	}
 
 	if simulationConfig.RandomSeed == 0 {
 		simulationConfig.RandomSeed = rand.Uint64()
+		log.Printf("RANDOM SEED: %v", simulationConfig.RandomSeed)
 	}
+
 }
